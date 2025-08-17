@@ -75,8 +75,8 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentView }) => {
               <div className="w-32 h-32 mx-auto mb-4 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl flex items-center justify-center">
                 <TrendingUp className="w-16 h-16 text-white" />
               </div>
-              <p className="text-sm">3D Model Placeholder</p>
-              <p className="text-xs mt-1">Spline model will be integrated here</p>
+              <p className="text-sm">Moosa seller</p>
+              <p className="text-xs mt-1">The Name of Trust</p>
             </div>
           </div>
         </div>
