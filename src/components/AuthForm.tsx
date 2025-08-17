@@ -137,9 +137,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           {isLogin && (
             <div className="mt-4 p-4 bg-blue-500/20 border border-blue-500/50 rounded-lg">
               <p className="text-blue-200 text-sm text-center">
-                <strong>Demo Credentials:</strong><br />
-                Admin: admin@moosaseller.com / admin123<br />
-                User: user@demo.com / user123
+                <strong>Owner Of The Website:</strong><br />
+                MOOSA SELLER<br />
+                TRUSTED ADMIN
               </p>
             </div>
           )}
