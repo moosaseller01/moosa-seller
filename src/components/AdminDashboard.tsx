@@ -17,7 +17,8 @@ const AdminDashboard: React.FC = () => {
     
     setAccounts(savedAccounts);
     setUsers(savedUsers);
-    setPendingAccounts(savedPendingAccounts);
+    // Only show truly pending accounts (not auto-approved ones)
+    setPendingAccounts(savedPendingAccounts.filter(acc => acc.status === 'pending'));
   }, []);
 
   const approveAccount = (accountId: string) => {

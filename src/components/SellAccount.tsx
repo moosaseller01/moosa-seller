@@ -58,20 +58,35 @@ const SellAccount: React.FC<SellAccountProps> = ({ setCurrentView }) => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Save to localStorage (in a real app, this would be sent to a server)
-    const accounts = JSON.parse(localStorage.getItem('sellerAccounts') || '[]');
+    // Auto-approve and add to available accounts immediately
+    const availableAccounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+    const pendingAccounts = JSON.parse(localStorage.getItem('sellerAccounts') || '[]');
+    
     const newAccount = {
       id: Date.now().toString(),
+      sellerId: 'seller_' + Date.now(),
       ...formData,
+      followers: parseInt(formData.followers) || 0,
+      following: parseInt(formData.following) || 0,
+      likes: parseInt(formData.likes) || 0,
+      videos: parseInt(formData.videos) || 0,
+      price: parseInt(formData.price) || 0,
+      engagementRate: parseFloat(formData.engagementRate) || 0,
       images,
-      status: 'pending',
+      status: 'available',
       createdAt: new Date().toISOString()
     };
-    accounts.push(newAccount);
-    localStorage.setItem('sellerAccounts', JSON.stringify(accounts));
+    
+    // Add to available accounts (auto-approved)
+    availableAccounts.push(newAccount);
+    localStorage.setItem('accounts', JSON.stringify(availableAccounts));
+    
+    // Also keep a copy in seller accounts for admin tracking
+    pendingAccounts.push({...newAccount, status: 'approved'});
+    localStorage.setItem('sellerAccounts', JSON.stringify(pendingAccounts));
 
     setIsSubmitting(false);
-    alert('Account submitted successfully! It will be reviewed within 24 hours.');
+    alert('Account added successfully! Your account is now live and visible to all users.');
     
     // Reset form
     setFormData({

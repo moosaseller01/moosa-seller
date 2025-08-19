@@ -9,6 +9,7 @@ interface BuyAccountsProps {
 const BuyAccounts: React.FC<BuyAccountsProps> = ({ setCurrentView }) => {
   const [accounts, setAccounts] = useState<TikTokAccount[]>([]);
   const [filteredAccounts, setFilteredAccounts] = useState<TikTokAccount[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -18,8 +19,18 @@ const BuyAccounts: React.FC<BuyAccountsProps> = ({ setCurrentView }) => {
   const regions = ['all', 'US', 'UK', 'Canada', 'Australia', 'Germany', 'France', 'Japan', 'Brazil'];
   const categories = ['all', 'Entertainment', 'Comedy', 'Dance', 'Music', 'Fashion', 'Food', 'Travel', 'Tech', 'Gaming'];
 
+  // Auto-refresh accounts every 5 seconds to show new submissions
   useEffect(() => {
-    // Load sample accounts
+    const interval = setInterval(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [refreshTrigger]);
+
+  useEffect(() => {
+    // Load accounts from localStorage and combine with sample accounts
+    const savedAccounts = JSON.parse(localStorage.getItem('accounts') || '[]');
     const sampleAccounts: TikTokAccount[] = [
       {
         id: '1',
@@ -99,9 +110,10 @@ const BuyAccounts: React.FC<BuyAccountsProps> = ({ setCurrentView }) => {
       }
     ];
 
-    setAccounts(sampleAccounts);
-    setFilteredAccounts(sampleAccounts);
-  }, []);
+    // Combine sample accounts with user-submitted accounts
+    const allAccounts = [...sampleAccounts, ...savedAccounts];
+    setAccounts(allAccounts);
+    setFilteredAccounts(allAccounts);
 
   useEffect(() => {
     let filtered = accounts.filter(account => {
