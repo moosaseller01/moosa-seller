@@ -1,6 +1,5 @@
 import React from 'react';
 import { useState } from 'react';
-import Spline from '@splinetool/react-spline';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
@@ -8,18 +7,13 @@ import AuthForm from './components/AuthForm';
 import BuyAccounts from './components/BuyAccounts';
 import SellAccount from './components/SellAccount';
 import AdminDashboard from './components/AdminDashboard';
+import AnimatedBackground from './components/AnimatedBackground';
 
 function App() {
   return (
     <AuthProvider>
       <div className="min-h-screen relative">
-        <div className="fixed inset-0 -z-10">
-          <Spline 
-            scene="https://prod.spline.design/jWbkKwQ1eqNMIm91/scene.splinecode"
-            style={{ width: '100%', height: '100%' }}
-          />
-          <div className="absolute inset-0 bg-black/20" />
-        </div>
+        <AnimatedBackground />
         <AppContent />
       </div>
     </AuthProvider>
