@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Search, Send, Image, X, User, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Search, Send, Image, X, User, ArrowLeft, Radio, Plus, Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Message, Chat, User as UserType } from '../types';
 
@@ -16,6 +16,9 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
   const [searchUsername, setSearchUsername] = useState('');
   const [searchResults, setSearchResults] = useState<UserType[]>([]);
   const [showUserSearch, setShowUserSearch] = useState(false);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [broadcastName, setBroadcastName] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -637,6 +640,94 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
             </div>
           </div>
         </div>
+
+        {/* Broadcast Creation Modal */}
+        {showBroadcastModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 max-w-md w-full max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">Create Broadcast</h2>
+                <button
+                  onClick={() => {
+                    setShowBroadcastModal(false);
+                    setBroadcastName('');
+                    setSelectedUsers([]);
+                  }}
+                  className="text-white/70 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-2">
+                    Broadcast Name
+                  </label>
+                  <input
+                    type="text"
+                    value={broadcastName}
+                    onChange={(e) => setBroadcastName(e.target.value)}
+                    placeholder="Enter broadcast name..."
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-2">
+                    Select Recipients ({selectedUsers.length} selected)
+                  </label>
+                  <div className="max-h-48 overflow-y-auto space-y-2">
+                    {users
+                      .filter(u => u.id !== user?.id)
+                      .map(availableUser => (
+                        <button
+                          key={availableUser.id}
+                          onClick={() => toggleUserSelection(availableUser.id)}
+                          className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors text-left ${
+                            selectedUsers.includes(availableUser.id)
+                              ? 'bg-green-600/30 border border-green-500/50'
+                              : 'bg-white/5 hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-white font-medium">{availableUser.username}</p>
+                            <p className="text-white/70 text-xs">{availableUser.email}</p>
+                          </div>
+                          {selectedUsers.includes(availableUser.id) && (
+                            <Check className="w-5 h-5 text-green-400" />
+                          )}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => {
+                      setShowBroadcastModal(false);
+                      setBroadcastName('');
+                      setSelectedUsers([]);
+                    }}
+                    className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={createBroadcast}
+                    disabled={!broadcastName.trim() || selectedUsers.length === 0}
+                    className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                  >
+                    Create Broadcast
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
