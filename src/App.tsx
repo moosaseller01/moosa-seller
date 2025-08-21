@@ -8,6 +8,7 @@ import BuyAccounts from './components/BuyAccounts';
 import SellAccount from './components/SellAccount';
 import AdminDashboard from './components/AdminDashboard';
 import AnimatedBackground from './components/AnimatedBackground';
+import ChatSystem from './components/ChatSystem';
 
 function App() {
   return (
