@@ -47,6 +47,9 @@ export interface Message {
 export interface Chat {
   id: string;
   participants: string[];
+  type: 'direct' | 'broadcast';
+  name?: string;
+  createdBy?: string;
   lastMessage?: Message;
   updatedAt: string;
 }

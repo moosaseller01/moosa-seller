@@ -65,8 +65,10 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
     
     // Check if chat already exists
     const existingChat = chats.find(chat => 
+      chat.type === 'direct' &&
       chat.participants.includes(user.id) && 
-      chat.participants.includes(otherUser.id)
+      chat.participants.includes(otherUser.id) &&
+      chat.participants.length === 2
     );
     
     if (existingChat) {
@@ -81,6 +83,7 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
     const newChat: Chat = {
       id: Date.now().toString(),
       participants: [user.id, otherUser.id],
+      type: 'direct',
       updatedAt: new Date().toISOString()
     };
     
@@ -98,86 +101,73 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
     setSearchResults([]);
   };
 
-  const sendMessage = () => {
-    if (!user || !activeChat || !newMessage.trim()) return;
+  const createBroadcast = () => {
+    if (!user || selectedUsers.length === 0 || !broadcastName.trim()) return;
     
-    const otherUserId = activeChat.participants.find(id => id !== user.id);
-    if (!otherUserId) return;
-    
-    const message: Message = {
+    const newBroadcast: Chat = {
       id: Date.now().toString(),
-      senderId: user.id,
-      receiverId: otherUserId,
-      content: newMessage.trim(),
-      type: 'text',
-      timestamp: new Date().toISOString(),
-      read: false
-    };
-    
-    const updatedMessages = [...messages, message];
-    setMessages(updatedMessages);
-    
-    // Save to localStorage
-    const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
-    allMessages.push(message);
-    localStorage.setItem('messages', JSON.stringify(allMessages));
-    
-    // Update chat's last message
-    const updatedChat = {
-      ...activeChat,
-      lastMessage: message,
+      participants: [user.id, ...selectedUsers],
+      type: 'broadcast',
+      name: broadcastName.trim(),
+      createdBy: user.id,
       updatedAt: new Date().toISOString()
     };
     
-    const updatedChats = chats.map(chat => 
-      chat.id === activeChat.id ? updatedChat : chat
-    );
+    const updatedChats = [...chats, newBroadcast];
     setChats(updatedChats);
     
-    // Update in localStorage
+    // Save to localStorage
     const allChats = JSON.parse(localStorage.getItem('chats') || '[]');
-    const updatedAllChats = allChats.map((chat: Chat) => 
-      chat.id === activeChat.id ? updatedChat : chat
-    );
-    localStorage.setItem('chats', JSON.stringify(updatedAllChats));
+    allChats.push(newBroadcast);
+    localStorage.setItem('chats', JSON.stringify(allChats));
     
-    setActiveChat(updatedChat);
-    setNewMessage('');
+    setActiveChat(newBroadcast);
+    setShowBroadcastModal(false);
+    setBroadcastName('');
+    setSelectedUsers([]);
   };
 
-  const sendImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user || !activeChat) return;
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const sendMessage = () => {
+    if (!user || !activeChat || !newMessage.trim()) return;
     
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageData = e.target?.result as string;
+    if (activeChat.type === 'broadcast') {
+      // Send message to all participants except sender
+      const recipients = activeChat.participants.filter(id => id !== user.id);
+      const newMessages: Message[] = [];
       
-      const otherUserId = activeChat.participants.find(id => id !== user.id);
-      if (!otherUserId) return;
+      recipients.forEach(recipientId => {
+        const message: Message = {
+          id: Date.now().toString() + '_' + recipientId,
+          senderId: user.id,
+          receiverId: recipientId,
+          content: newMessage.trim(),
+          type: 'text',
+          timestamp: new Date().toISOString(),
+          read: false
+        };
+        newMessages.push(message);
+      });
       
-      const message: Message = {
-        id: Date.now().toString(),
-        senderId: user.id,
-        receiverId: otherUserId,
-        content: imageData,
-        type: 'image',
-        timestamp: new Date().toISOString(),
-        read: false
-      };
-      
-      const updatedMessages = [...messages, message];
+      const updatedMessages = [...messages, ...newMessages];
       setMessages(updatedMessages);
       
       // Save to localStorage
       const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
-      allMessages.push(message);
+      allMessages.push(...newMessages);
       localStorage.setItem('messages', JSON.stringify(allMessages));
       
-      // Update chat's last message
+      // Update broadcast's last message
       const updatedChat = {
         ...activeChat,
-        lastMessage: { ...message, content: 'Sent an image' },
+        lastMessage: newMessages[0],
         updatedAt: new Date().toISOString()
       };
       
@@ -194,6 +184,152 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
       localStorage.setItem('chats', JSON.stringify(updatedAllChats));
       
       setActiveChat(updatedChat);
+    } else {
+      // Direct message
+      const otherUserId = activeChat.participants.find(id => id !== user.id);
+      if (!otherUserId) return;
+      
+      const message: Message = {
+        id: Date.now().toString(),
+        senderId: user.id,
+        receiverId: otherUserId,
+        content: newMessage.trim(),
+        type: 'text',
+        timestamp: new Date().toISOString(),
+        read: false
+      };
+      
+      const updatedMessages = [...messages, message];
+      setMessages(updatedMessages);
+      
+      // Save to localStorage
+      const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+      allMessages.push(message);
+      localStorage.setItem('messages', JSON.stringify(allMessages));
+      
+      // Update chat's last message
+      const updatedChat = {
+        ...activeChat,
+        lastMessage: message,
+        updatedAt: new Date().toISOString()
+      };
+      
+      const updatedChats = chats.map(chat => 
+        chat.id === activeChat.id ? updatedChat : chat
+      );
+      setChats(updatedChats);
+      
+      // Update in localStorage
+      const allChats = JSON.parse(localStorage.getItem('chats') || '[]');
+      const updatedAllChats = allChats.map((chat: Chat) => 
+        chat.id === activeChat.id ? updatedChat : chat
+      );
+      localStorage.setItem('chats', JSON.stringify(updatedAllChats));
+      
+      setActiveChat(updatedChat);
+    }
+    
+    setNewMessage('');
+  };
+
+  const sendImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user || !activeChat) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageData = e.target?.result as string;
+      
+      if (activeChat.type === 'broadcast') {
+        // Send image to all participants except sender
+        const recipients = activeChat.participants.filter(id => id !== user.id);
+        const newMessages: Message[] = [];
+        
+        recipients.forEach(recipientId => {
+          const message: Message = {
+            id: Date.now().toString() + '_' + recipientId,
+            senderId: user.id,
+            receiverId: recipientId,
+            content: imageData,
+            type: 'image',
+            timestamp: new Date().toISOString(),
+            read: false
+          };
+          newMessages.push(message);
+        });
+        
+        const updatedMessages = [...messages, ...newMessages];
+        setMessages(updatedMessages);
+        
+        // Save to localStorage
+        const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+        allMessages.push(...newMessages);
+        localStorage.setItem('messages', JSON.stringify(allMessages));
+        
+        // Update broadcast's last message
+        const updatedChat = {
+          ...activeChat,
+          lastMessage: { ...newMessages[0], content: 'Sent an image' },
+          updatedAt: new Date().toISOString()
+        };
+        
+        const updatedChats = chats.map(chat => 
+          chat.id === activeChat.id ? updatedChat : chat
+        );
+        setChats(updatedChats);
+        
+        // Update in localStorage
+        const allChats = JSON.parse(localStorage.getItem('chats') || '[]');
+        const updatedAllChats = allChats.map((chat: Chat) => 
+          chat.id === activeChat.id ? updatedChat : chat
+        );
+        localStorage.setItem('chats', JSON.stringify(updatedAllChats));
+        
+        setActiveChat(updatedChat);
+      } else {
+        // Direct message
+        const otherUserId = activeChat.participants.find(id => id !== user.id);
+        if (!otherUserId) return;
+        
+        const message: Message = {
+          id: Date.now().toString(),
+          senderId: user.id,
+          receiverId: otherUserId,
+          content: imageData,
+          type: 'image',
+          timestamp: new Date().toISOString(),
+          read: false
+        };
+        
+        const updatedMessages = [...messages, message];
+        setMessages(updatedMessages);
+        
+        // Save to localStorage
+        const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+        allMessages.push(message);
+        localStorage.setItem('messages', JSON.stringify(allMessages));
+        
+        // Update chat's last message
+        const updatedChat = {
+          ...activeChat,
+          lastMessage: { ...message, content: 'Sent an image' },
+          updatedAt: new Date().toISOString()
+        };
+        
+        const updatedChats = chats.map(chat => 
+          chat.id === activeChat.id ? updatedChat : chat
+        );
+        setChats(updatedChats);
+        
+        // Update in localStorage
+        const allChats = JSON.parse(localStorage.getItem('chats') || '[]');
+        const updatedAllChats = allChats.map((chat: Chat) => 
+          chat.id === activeChat.id ? updatedChat : chat
+        );
+        localStorage.setItem('chats', JSON.stringify(updatedAllChats));
+        
+        setActiveChat(updatedChat);
+      }
     };
     
     reader.readAsDataURL(file);
@@ -201,15 +337,26 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
   };
 
   const getChatMessages = (chatId: string) => {
-    return messages.filter(msg => {
-      const chat = chats.find(c => c.id === chatId);
-      if (!chat) return false;
-      return chat.participants.includes(msg.senderId) && 
-             chat.participants.includes(msg.receiverId);
-    }).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const chat = chats.find(c => c.id === chatId);
+    if (!chat) return [];
+    
+    if (chat.type === 'broadcast') {
+      // For broadcasts, show messages sent by the current user or received by the current user
+      return messages.filter(msg => {
+        return (msg.senderId === user?.id && chat.participants.includes(msg.receiverId)) ||
+               (msg.receiverId === user?.id && chat.participants.includes(msg.senderId));
+      }).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    } else {
+      // For direct chats
+      return messages.filter(msg => {
+        return chat.participants.includes(msg.senderId) && 
+               chat.participants.includes(msg.receiverId);
+      }).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    }
   };
 
   const getOtherUser = (chat: Chat) => {
+    if (chat.type === 'broadcast') return null;
     const otherUserId = chat.participants.find(id => id !== user?.id);
     return users.find(u => u.id === otherUserId);
   };
@@ -256,10 +403,18 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
                 <div className="flex items-center space-x-2 mb-4">
                   <h2 className="text-xl font-semibold text-white flex-1">Messages</h2>
                   <button
+                    onClick={() => setShowBroadcastModal(true)}
+                    className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                    title="Create Broadcast"
+                  >
+                    <Radio className="w-5 h-5" />
+                  </button>
+                  <button
                     onClick={() => setShowUserSearch(!showUserSearch)}
                     className="p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                    title="Start Chat"
                   >
-                    <Search className="w-5 h-5" />
+                    <Plus className="w-5 h-5" />
                   </button>
                 </div>
                 
@@ -316,7 +471,6 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
                       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
                       .map(chat => {
                         const otherUser = getOtherUser(chat);
-                        if (!otherUser) return null;
                         
                         return (
                           <button
@@ -328,13 +482,26 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
                                 : 'hover:bg-white/5'
                             }`}
                           >
-                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                              <span className="text-white font-semibold">
-                                {otherUser.username.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
+                            {chat.type === 'broadcast' ? (
+                              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                                <Radio className="w-5 h-5 text-white" />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                <span className="text-white font-semibold">
+                                  {otherUser?.username.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
                             <div className="flex-1 min-w-0">
-                              <p className="text-white font-medium truncate">{otherUser.username}</p>
+                              <p className="text-white font-medium truncate">
+                                {chat.type === 'broadcast' ? chat.name : otherUser?.username}
+                              </p>
+                              {chat.type === 'broadcast' && (
+                                <p className="text-white/50 text-xs">
+                                  {chat.participants.length - 1} recipients
+                                </p>
+                              )}
                               {chat.lastMessage && (
                                 <p className="text-white/70 text-sm truncate">
                                   {chat.lastMessage.type === 'image' ? '📷 Image' : chat.lastMessage.content}
@@ -366,14 +533,27 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
                     >
                       <ArrowLeft className="w-5 h-5 text-white" />
                     </button>
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold">
-                        {getOtherUser(activeChat)?.username.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                    {activeChat.type === 'broadcast' ? (
+                      <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <Radio className="w-5 h-5 text-white" />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-semibold">
+                          {getOtherUser(activeChat)?.username.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                     <div>
-                      <h3 className="text-white font-semibold">{getOtherUser(activeChat)?.username}</h3>
-                      <p className="text-white/70 text-sm">Online</p>
+                      <h3 className="text-white font-semibold">
+                        {activeChat.type === 'broadcast' ? activeChat.name : getOtherUser(activeChat)?.username}
+                      </h3>
+                      <p className="text-white/70 text-sm">
+                        {activeChat.type === 'broadcast' 
+                          ? `${activeChat.participants.length - 1} recipients`
+                          : 'Online'
+                        }
+                      </p>
                     </div>
                   </div>
 
