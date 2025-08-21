@@ -61,9 +61,20 @@ const BuyAccounts: React.FC<BuyAccountsProps> = ({ setCurrentView }) => {
   }, [accounts, searchTerm, selectedPlatform, selectedCategory, priceRange]);
 
   const handleContactSeller = (account: Account) => {
-    const message = `Hi! I'm interested in buying your ${account.platform} account with ${account.followers.toLocaleString()} followers for $${account.price}. Can we discuss the details?`;
-    const whatsappUrl = `https://wa.me/923432252006?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    // Try to find the seller and start a chat
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const seller = users.find((u: any) => u.id === account.sellerId);
+    
+    if (seller) {
+      // Start chat with seller
+      setCurrentView('chat');
+      // You could pass additional data here to auto-start the chat
+    } else {
+      // Fallback to WhatsApp
+      const message = `Hi! I'm interested in buying your ${account.platform} account with ${account.followers.toLocaleString()} followers for $${account.price}. Can we discuss the details?`;
+      const whatsappUrl = `https://wa.me/923432252006?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    }
   };
 
   const formatNumber = (num: number) => {

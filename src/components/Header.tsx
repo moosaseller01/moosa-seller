@@ -43,6 +43,16 @@ const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) => {
               >
                 Sell Account
               </button>
+              <button
+                onClick={() => setCurrentView('chat')}
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  currentView === 'chat' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                Chat
+              </button>
               {user?.role === 'admin' && (
                 <button
                   onClick={() => setCurrentView('admin')}

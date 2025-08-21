@@ -25,7 +25,7 @@ const AppContent: React.FC = () => {
   const { user } = useAuth();
 
   const renderCurrentView = () => {
-    if (!user && (currentView === 'sell' || currentView === 'admin')) {
+    if (!user && (currentView === 'sell' || currentView === 'admin' || currentView === 'chat')) {
       return <AuthForm onSuccess={() => setCurrentView('home')} />;
     }
 
@@ -36,6 +36,8 @@ const AppContent: React.FC = () => {
         return <BuyAccounts setCurrentView={setCurrentView} />;
       case 'sell':
         return <SellAccount setCurrentView={setCurrentView} />;
+      case 'chat':
+        return <ChatSystem setCurrentView={setCurrentView} />;
       case 'admin':
         return user?.role === 'admin' ? <AdminDashboard /> : <HomePage setCurrentView={setCurrentView} />;
       default:
