@@ -352,7 +352,7 @@ const AdminDashboard: React.FC = () => {
                       <div key={user.id} className="bg-white/5 rounded-lg p-4 border border-white/10 flex justify-between items-center">
                         <div>
                           <h3 className="text-white font-semibold">{user.username}</h3>
-                          <p className="text-white/70 text-sm">{user.email}</p>
+                          <p className="text-white/70 text-sm">{user.phoneNumber}</p>
                         </div>
                         <div className="text-right">
                           <span className={`px-3 py-1 rounded text-xs ${
