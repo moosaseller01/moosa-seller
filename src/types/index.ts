@@ -1,9 +1,11 @@
 export interface User {
   id: string;
-  email: string;
+  phoneNumber: string;
+  countryCode: string;
   username: string;
   role: 'user' | 'admin';
   createdAt: string;
+  personalBroadcastId?: string;
 }
 
 export interface TikTokAccount {
@@ -28,8 +30,8 @@ export interface TikTokAccount {
 
 export interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, username: string) => Promise<boolean>;
+  sendOTP: (countryCode: string, phoneNumber: string) => Promise<boolean>;
+  verifyOTP: (countryCode: string, phoneNumber: string, otp: string, username?: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -50,6 +52,7 @@ export interface Chat {
   type: 'direct' | 'broadcast';
   name?: string;
   createdBy?: string;
+  isPersonal?: boolean;
   lastMessage?: Message;
   updatedAt: string;
 }

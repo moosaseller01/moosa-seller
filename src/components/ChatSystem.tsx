@@ -549,11 +549,13 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ setCurrentView }) => {
                     )}
                     <div>
                       <h3 className="text-white font-semibold">
-                        {activeChat.type === 'broadcast' ? activeChat.name : getOtherUser(activeChat)?.username}
+                        {activeChat.type === 'broadcast' ? 
+                          (activeChat.isPersonal ? 'My Status' : activeChat.name) : 
+                          getOtherUser(activeChat)?.username}
                       </h3>
                       <p className="text-white/70 text-sm">
                         {activeChat.type === 'broadcast' 
-                          ? `${activeChat.participants.length - 1} recipients`
+                          ? (activeChat.isPersonal ? 'Personal broadcast' : `${activeChat.participants.length - 1} recipients`)
                           : 'Online'
                         }
                       </p>

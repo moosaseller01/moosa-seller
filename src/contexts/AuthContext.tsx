@@ -27,24 +27,121 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const sendOTP = async (countryCode: string, phoneNumber: string): Promise<boolean> => {
     setIsLoading(true);
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Check if user exists in localStorage
+    // Generate and store OTP (in real app, this would be sent via SMS)
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const fullPhoneNumber = countryCode + phoneNumber;
+    
+    // Store OTP temporarily (expires in 5 minutes)
+    const otpData = {
+      otp,
+      phoneNumber: fullPhoneNumber,
+      timestamp: Date.now(),
+      expires: Date.now() + 5 * 60 * 1000 // 5 minutes
+    };
+    
+    localStorage.setItem('pendingOTP', JSON.stringify(otpData));
+    
+    // In development, show OTP in console (remove in production)
+    console.log(`OTP for ${fullPhoneNumber}: ${otp}`);
+    alert(`Development Mode: Your OTP is ${otp}`);
+    
+    setIsLoading(false);
+    return true;
+  };
+
+  const verifyOTP = async (countryCode: string, phoneNumber: string, otp: string, username?: string): Promise<boolean> => {
+    setIsLoading(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const fullPhoneNumber = countryCode + phoneNumber;
+    const pendingOTP = localStorage.getItem('pendingOTP');
+    
+    if (!pendingOTP) {
+      setIsLoading(false);
+      return false;
+    }
+    
+    const otpData = JSON.parse(pendingOTP);
+    
+    // Check if OTP is valid and not expired
+    if (otpData.otp !== otp || otpData.phoneNumber !== fullPhoneNumber || Date.now() > otpData.expires) {
+      setIsLoading(false);
+      return false;
+    }
+    
+    // Clear pending OTP
+    localStorage.removeItem('pendingOTP');
+    
+    // Check if user exists
     const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const existingUser = users.find((u: any) => u.email === email && u.password === password);
+    let existingUser = users.find((u: any) => u.phoneNumber === fullPhoneNumber);
     
     if (existingUser) {
+      // Existing user login
       const userData: User = {
         id: existingUser.id,
-        email: existingUser.email,
+        phoneNumber: existingUser.phoneNumber,
+        countryCode: existingUser.countryCode,
         username: existingUser.username,
         role: existingUser.role || 'user',
-        createdAt: existingUser.createdAt
+        createdAt: existingUser.createdAt,
+        personalBroadcastId: existingUser.personalBroadcastId
       };
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setIsLoading(false);
+      return true;
+    } else if (username) {
+      // New user registration
+      const newUserId = Date.now().toString();
+      const personalBroadcastId = 'broadcast_' + newUserId;
+      
+      const newUser = {
+        id: newUserId,
+        phoneNumber: fullPhoneNumber,
+        countryCode,
+        username,
+        role: fullPhoneNumber === '+923432252006' ? 'admin' : 'user', // Admin phone
+        createdAt: new Date().toISOString(),
+        personalBroadcastId
+      };
+      
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      // Create personal broadcast for the user
+      const chats = JSON.parse(localStorage.getItem('chats') || '[]');
+      const personalBroadcast = {
+        id: personalBroadcastId,
+        participants: [newUserId],
+        type: 'broadcast',
+        name: 'My Status',
+        createdBy: newUserId,
+        isPersonal: true,
+        updatedAt: new Date().toISOString()
+      };
+      
+      chats.push(personalBroadcast);
+      localStorage.setItem('chats', JSON.stringify(chats));
+      
+      const userData: User = {
+        id: newUser.id,
+        phoneNumber: newUser.phoneNumber,
+        countryCode: newUser.countryCode,
+        username: newUser.username,
+        role: newUser.role,
+        createdAt: newUser.createdAt,
+        personalBroadcastId: newUser.personalBroadcastId
+      };
+      
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       setIsLoading(false);
@@ -55,55 +152,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return false;
   };
 
-  const signup = async (email: string, password: string, username: string): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const existingUser = users.find((u: any) => u.email === email);
-    
-    if (existingUser) {
-      setIsLoading(false);
-      return false;
-    }
-    
-    const newUser = {
-      id: Date.now().toString(),
-      email,
-      password,
-      username,
-      role: email === 'admin@moosaseller.com' ? 'admin' : 'user',
-      createdAt: new Date().toISOString()
-    };
-    
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    const userData: User = {
-      id: newUser.id,
-      email: newUser.email,
-      username: newUser.username,
-      role: newUser.role,
-      createdAt: newUser.createdAt
-    };
-    
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setIsLoading(false);
-    return true;
-  };
-
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('pendingOTP');
   };
 
   const value: AuthContextType = {
     user,
-    login,
-    signup,
+    sendOTP,
+    verifyOTP,
     logout,
     isLoading
   };
