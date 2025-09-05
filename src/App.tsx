@@ -9,6 +9,8 @@ import SellAccount from './components/SellAccount';
 import AdminDashboard from './components/AdminDashboard';
 import AnimatedBackground from './components/AnimatedBackground';
 import ChatSystem from './components/ChatSystem';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
 
 function App() {
   return (
@@ -41,6 +43,10 @@ const AppContent: React.FC = () => {
         return <ChatSystem setCurrentView={setCurrentView} />;
       case 'admin':
         return user?.role === 'admin' ? <AdminDashboard /> : <HomePage setCurrentView={setCurrentView} />;
+      case 'privacy':
+        return <PrivacyPolicy setCurrentView={setCurrentView} />;
+      case 'terms':
+        return <TermsOfService setCurrentView={setCurrentView} />;
       default:
         return <HomePage setCurrentView={setCurrentView} />;
     }
