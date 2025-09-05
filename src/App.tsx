@@ -1,63 +1,115 @@
 import React from 'react';
-import { useState } from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Header from './components/Header';
-import HomePage from './components/HomePage';
-import AuthForm from './components/AuthForm';
-import BuyAccounts from './components/BuyAccounts';
-import SellAccount from './components/SellAccount';
-import AdminDashboard from './components/AdminDashboard';
-import AnimatedBackground from './components/AnimatedBackground';
-import ChatSystem from './components/ChatSystem';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import TermsOfService from './components/TermsOfService';
+import { User, LogOut, Settings, ShoppingBag } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
-function App() {
-  return (
-    <AuthProvider>
-      <div className="min-h-screen relative">
-        <AnimatedBackground />
-        <AppContent />
-      </div>
-    </AuthProvider>
-  );
+interface HeaderProps {
+  currentView: string;
+  setCurrentView: (view: string) => void;
 }
 
-const AppContent: React.FC = () => {
-  const [currentView, setCurrentView] = useState('home');
-  const { user } = useAuth();
-
-  const renderCurrentView = () => {
-    if (!user && (currentView === 'sell' || currentView === 'admin' || currentView === 'chat')) {
-      return <AuthForm onSuccess={() => setCurrentView('home')} />;
-    }
-
-    switch (currentView) {
-      case 'auth':
-        return <AuthForm onSuccess={() => setCurrentView('home')} />;
-      case 'buy':
-        return <BuyAccounts setCurrentView={setCurrentView} />;
-      case 'sell':
-        return <SellAccount setCurrentView={setCurrentView} />;
-      case 'chat':
-        return <ChatSystem setCurrentView={setCurrentView} />;
-      case 'admin':
-        return user?.role === 'admin' ? <AdminDashboard /> : <HomePage setCurrentView={setCurrentView} />;
-      case 'privacy':
-        return <PrivacyPolicy setCurrentView={setCurrentView} />;
-      case 'terms':
-        return <TermsOfService setCurrentView={setCurrentView} />;
-      default:
-        return <HomePage setCurrentView={setCurrentView} />;
-    }
-  };
+const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) => {
+  const { user, logout } = useAuth();
 
   return (
-    <>
-      <Header currentView={currentView} setCurrentView={setCurrentView} />
-      {renderCurrentView()}
-    </>
+    <header className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center space-x-8">
+            <div 
+              className="text-2xl font-bold text-white cursor-pointer hover:text-purple-300 transition-colors"
+              onClick={() => setCurrentView('home')}
+            >
+              MOOSA SELLER
+            </div>
+            
+            <nav className="hidden md:flex space-x-6">
+              <button
+                onClick={() => setCurrentView('buy')}
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  currentView === 'buy' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                Buy Accounts
+              </button>
+              <button
+                onClick={() => setCurrentView('sell')}
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  currentView === 'sell' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                Sell Account
+              </button>
+              <button
+                onClick={() => setCurrentView('chat')}
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  currentView === 'chat' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                Chat
+              </button>
+              {user?.role === 'admin' && (
+                <button
+                  onClick={() => setCurrentView('admin')}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    currentView === 'admin' 
+                      ? 'bg-purple-600 text-white' 
+                      : 'text-white/80 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <Settings className="w-4 h-4 inline mr-2" />
+                  Admin
+                </button>
+              )}
+            </nav>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-white">
+                  <User className="w-5 h-5" />
+                  <span className="hidden sm:block">{user.username}</span>
+                </div>
+                <button
+                  onClick={logout}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:block">Logout</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setCurrentView('auth')}
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+              >
+                Login / Sign Up
+              </button>
+            )}
+          </div>
+
+          {/* Mobile Menu */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </header>
   );
 };
 
-export default App;
+export default Header;

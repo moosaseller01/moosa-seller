@@ -178,6 +178,39 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentView }) => {
           </div>
         </div>
       </footer>
+
+      {/* Footer */}
+      <footer className="py-8 px-4 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="text-center md:text-left">
+              <p className="text-white/70 text-sm">
+                © 2024 MOOSA SELLER. All rights reserved.
+              </p>
+            </div>
+            <div className="flex space-x-6">
+              <button
+                onClick={() => setCurrentView('privacy')}
+                className="text-white/70 hover:text-white text-sm transition-colors"
+              >
+                Privacy Policy
+              </button>
+              <button
+                onClick={() => setCurrentView('terms')}
+                className="text-white/70 hover:text-white text-sm transition-colors"
+              >
+                Terms of Service
+              </button>
+              <button
+                onClick={() => window.open('https://wa.me/923432252006', '_blank')}
+                className="text-white/70 hover:text-white text-sm transition-colors"
+              >
+                Contact Support
+              </button>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

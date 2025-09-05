@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import { User, LogOut, Settings, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) => {
   const { user, logout } = useAuth();
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   return (
     <header className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-50">
