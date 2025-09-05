@@ -195,7 +195,7 @@ const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ setCurrentView }) => {
                 <div>
                   <p className="text-white font-medium mb-2">MOOSA SELLER Support</p>
                   <p className="text-white/70 text-sm">WhatsApp: +92 343 225 2006</p>
-                  <p className="text-white/70 text-sm">Email: support@moosaseller.com</p>
+                  <p className="text-white/70 text-sm">Email: info.moosaseller@gmail.com</p>
                 </div>
                 <div>
                   <p className="text-white font-medium mb-2">Business Hours</p>
