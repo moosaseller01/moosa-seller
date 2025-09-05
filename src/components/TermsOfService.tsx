@@ -267,7 +267,7 @@ const TermsOfService: React.FC<TermsOfServiceProps> = ({ setCurrentView }) => {
                 <div>
                   <p className="text-white font-medium mb-2">Legal Department</p>
                   <p className="text-white/70 text-sm">WhatsApp: +92 343 225 2006</p>
-                  <p className="text-white/70 text-sm">Email: legal@moosaseller.com</p>
+                  <p className="text-white/70 text-sm">Email: info.moosaseller@gmail.com</p>
                 </div>
                 <div>
                   <p className="text-white font-medium mb-2">Response Time</p>
