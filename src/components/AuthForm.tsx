@@ -242,6 +242,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           )}
 
           <div className="mt-6 p-4 bg-blue-500/20 border border-blue-500/50 rounded-lg">
+            {/* reCAPTCHA container - invisible */}
+            <div id="recaptcha-container"></div>
             <p className="text-blue-200 text-sm text-center">
               <strong>MOOSA SELLER</strong><br />
               Trusted Marketplace for Social Media Accounts<br />
