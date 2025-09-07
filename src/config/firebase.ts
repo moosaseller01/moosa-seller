@@ -5,15 +5,14 @@ import { getAuth } from "firebase/auth";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyA_6fJ0CH97fRCEtOX6VBHdhFlwwStYSwo",
-  authDomain: "moosa-seller-a94a7.firebaseapp.com",
-  projectId: "moosa-seller-a94a7",
-  storageBucket: "moosa-seller-a94a7.firebasestorage.app",
-  messagingSenderId: "170469090135",
-  appId: "1:170469090135:web:6364d7c064d37129f21412",
-  measurementId: "G-RYC9JHSKTZ"
+  // Replace with your Firebase config
+  apiKey: "your-api-key-here",
+  authDomain: "your-project.firebaseapp.com", 
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "your-sender-id",
+  appId: "your-app-id"
 };
 
 // Initialize Firebase
